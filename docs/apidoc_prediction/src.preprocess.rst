@@ -4,10 +4,10 @@ src.preprocess package
 Submodules
 ----------
 
-src.preprocess.crop_dicom module
+src.preprocess.crop_image module
 --------------------------------
 
-.. automodule:: src.preprocess.crop_dicom
+.. automodule:: src.preprocess.crop_image
     :members:
     :undoc-members:
     :show-inheritance:
@@ -20,10 +20,10 @@ src.preprocess.errors module
     :undoc-members:
     :show-inheritance:
 
-src.preprocess.load_dicom module
+src.preprocess.load_image module
 --------------------------------
 
-.. automodule:: src.preprocess.load_dicom
+.. automodule:: src.preprocess.load_image
     :members:
     :undoc-members:
     :show-inheritance:

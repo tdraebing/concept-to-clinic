@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from ..preprocess import load_dicom, preprocess_dicom
+from ..preprocess import load_image, preprocess_dicom
 
 
 @pytest.fixture
@@ -33,10 +33,10 @@ def test_preprocess_dicom_pure(dicom_path):
     params = preprocess_dicom.Params()
     preprocess = preprocess_dicom.PreprocessDicom(params)
 
-    dicom_array = load_dicom.load_dicom(dicom_path)
+    dicom_array = load_image.load_image(dicom_path)
     assert isinstance(dicom_array, np.ndarray)
 
-    dicom_array = load_dicom.load_dicom(dicom_path, preprocess)
+    dicom_array = load_image.load_image(dicom_path, preprocess)
     assert isinstance(dicom_array, np.ndarray)
 
 
@@ -44,7 +44,7 @@ def test_preprocess_dicom_clips(dicom_path):
     params = preprocess_dicom.Params(clip_lower=-1, clip_upper=40)
     preprocess = preprocess_dicom.PreprocessDicom(params)
 
-    dicom_array = load_dicom.load_dicom(dicom_path, preprocess)
+    dicom_array = load_image.load_image(dicom_path, preprocess)
     assert isinstance(dicom_array, np.ndarray)
     assert dicom_array.max() <= 40
     assert dicom_array.min() >= -1
@@ -54,7 +54,7 @@ def test_preprocess_dicom_min_max_scale(dicom_path):
     params = preprocess_dicom.Params(clip_lower=-1000, clip_upper=400, min_max_normalize=True)
     preprocess = preprocess_dicom.PreprocessDicom(params)
 
-    dicom_array = load_dicom.load_dicom(dicom_path, preprocess)
+    dicom_array = load_image.load_image(dicom_path, preprocess)
     assert isinstance(dicom_array, np.ndarray)
     assert dicom_array.max() <= 1
     assert dicom_array.min() >= 0
