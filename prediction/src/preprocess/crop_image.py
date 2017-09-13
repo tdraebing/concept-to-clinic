@@ -1,11 +1,12 @@
 import os
+import time
 
 import SimpleITK as sitk
 
 from .load_image import get_image
 
 
-def write_modified_dicom(filtered_image, out_path):
+def write_modified_dicom(filtered_image, metadata, out_path):
     writer = sitk.ImageFileWriter()
     writer.KeepOriginalImageUIDOn()
 
@@ -23,8 +24,8 @@ def write_modified_dicom(filtered_image, out_path):
     modification_date = time.strftime("%Y%m%d")
 
     direction = filtered_image.GetDirection()
-    series_tag_values = [(k, series_reader.GetMetaData(0, k)) for k in tags_to_copy if
-                         series_reader.HasMetaDataKey(0, k)] + \
+    series_tag_values = [(metadata[k] for k in tags_to_copy if
+                         metadata)] + \
                         [("0008|0031", modification_time),  # Series Time
                          ("0008|0021", modification_date),  # Series Date
                          ("0008|0008", "DERIVED\\SECONDARY"),  # Image Type
@@ -71,7 +72,7 @@ def crop_image(path_to_image, begin, end, output=None, output_format=None):
 
     """
 
-    image = get_image(path_to_image)
+    metadata, image = get_image(path_to_image)
     cropped_image = image[begin[0]:end[0], begin[1]:end[1], begin[2]:end[2]]
 
     if output:
@@ -82,7 +83,7 @@ def crop_image(path_to_image, begin, end, output=None, output_format=None):
             output_format = os.path.splitext(path_to_image)
 
         if output_format == '':
-            write_modified_dicom(cropped_image, output)
+            write_modified_dicom(cropped_image, metadata, output)
         elif output_format in ['.mhd', '.raw']:
             filename = os.path.splitext(os.path.split(path_to_image)[-1])[0] + '_cropped' + output_format
             sitk.ImageFileWriter(cropped_image, os.path.join(output, filename))

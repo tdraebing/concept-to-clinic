@@ -7,7 +7,7 @@
     descriptive statistics.
 """
 
-from src.preprocess.load_dicom import load_dicom
+from src.preprocess.load_image import load_image
 
 
 def predict(dicom_path, centroids):
@@ -34,7 +34,7 @@ def predict(dicom_path, centroids):
             {'binary_mask_path': str,
              'volumes': list[float]}
     """
-    load_dicom(dicom_path)
+    load_image(dicom_path)
     segment_path = 'path/to/segmentation'
     volumes = calculate_volume(segment_path, centroids)
     return_value = {

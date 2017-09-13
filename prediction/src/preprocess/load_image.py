@@ -7,6 +7,14 @@ import SimpleITK as sitk
 from .errors import *
 
 
+def get_metadata(image):
+        metadata_keys = image.GetMetaDataKeys()
+        metadata = {}
+        for key in metadata_keys:
+            metadata[key] = image.GetMetaData(key)
+        return metadata
+
+
 def read_dicom_series(path):
     """
     Takes a path to a folder containing a DICOM series and reads into a SimpleITK image.
@@ -21,7 +29,8 @@ def read_dicom_series(path):
         reader = sitk.ImageSeriesReader()
         filenamesDICOM = reader.GetGDCMSeriesFileNames(path)
         reader.SetFileNames(filenamesDICOM)
-        return reader.Execute()
+        image = reader.Execute()
+        return image, get_metadata(image)
     except:
         raise InvalidDicomSeriesException()
 
@@ -37,13 +46,15 @@ def read_raw_file(path):
 
     """
     try:
-        return sitk.ReadImage(path)
+        image = sitk.ReadImage(path)
     except:
         extension = os.path.splitext(path)
         if extension not in ['.raw', '.mhd', '.dcm']:
             raise UnknownFileTypeException()
         else:
             raise InvalidImageException()
+
+    return image, get_metadata(image)
 
 
 def get_image(path):
@@ -79,11 +90,11 @@ def load_image(path, preprocess=None):
         numpy-array containing the 3D-representation of the DICOM-series
     """
 
-    image = get_image(path)
+    image, metadata = get_image(path)
     voxel_data = sitk.GetArrayFromImage(image)
 
     if preprocess is not None:
-        voxel_data = preprocess(files, voxel_data)
+        voxel_data = preprocess(image, voxel_data)
         print(type(voxel_data))
         if not isinstance(voxel_data, np.ndarray):
             raise TypeError('The signature of preprocess must be ' +

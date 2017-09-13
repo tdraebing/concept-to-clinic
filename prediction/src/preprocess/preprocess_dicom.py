@@ -77,8 +77,8 @@ class PreprocessDicom:
                 raise ValueError('The params should be an instance of %s.' % str(Params))
         self.params = params
 
-    def __call__(self, dicom_files, voxel_data):
-        if (self.params is None) or not len(dicom_files):
+    def __call__(self, sitk_image, voxel_data):
+        if (self.params is None) or not sitk_image.GetSize()[0] > 0:
             return voxel_data
 
         # Instead of np.clip usage in order to avoid np.max | np.min calculation in case of None
@@ -99,12 +99,11 @@ class PreprocessDicom:
             voxel_data = (voxel_data - data_min) / float(data_max - data_min)
 
         if self.params.voxel_shape is not None:
-            slice_locations = [dcm_file.SliceLocation for dcm_file in dicom_files]
-            slice_thikness = np.diff(slice_locations).mean()
             # Every DICOM file have the same PixelSpacing
-            current_shape = dicom_files[0].PixelSpacing
+            current_shape = sitk_image.GetSpacing()
             # Taking into account ijk -> xyz transformation
-            current_shape = np.asarray([current_shape[1], current_shape[0], slice_thikness])
+            # TODO: Check Slice Thickness
+            current_shape = np.asarray([current_shape[1], current_shape[0], current_shape[2]])
             zoom_fctr = current_shape / np.asarray(self.params.voxel_shape)
             voxel_data = scipy.ndimage.interpolation.zoom(voxel_data, zoom_fctr)
 
