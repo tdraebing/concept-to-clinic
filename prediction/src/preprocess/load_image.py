@@ -14,6 +14,8 @@ def get_metadata(image):
             metadata[key] = image.GetMetaData(key)
         return metadata
 
+def read_dicom_metadata(path):
+
 
 def read_dicom_series(path):
     """

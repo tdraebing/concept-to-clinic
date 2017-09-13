@@ -3,14 +3,16 @@ import abc
 
 class MetaData(object):
     def __init__(self):
-        self.orig_metadata = None
-        self.patient = None
+        self.uid = None         # String containing an identifier for the image series
+        self.ndims = None       # Integer conatining the number of dimensions
+        self.shape = None       # Tuple containing 3 integers stating the number of pixels/voxels in each dimension (x, y, z)
+        self.spacing = None     # Tuple containing 3 floats stating the spacing of pixels/voxels in each dimension (x, y, z)
 
 
 class MetaDataDirector:
 
-    def __init__(self, orig_metadata):
-        self.orig_metadata = orig_metadata
+    def __init__(self, path):
+        self.image_path = path
         self.normalizer = None
 
     def construct(self, normalizer):
@@ -23,14 +25,25 @@ class AbstractMetaDataNormalizer(metaclass=abc.ABCMeta):
 
     def __init__(self):
         self.metadata = MetaData()
-        self.orig_metadata = None
-
-    def save_orig_metadata(self, orig_metadata):
-        self.orig_metadata = orig_metadata
-        self.metadata.orig_metadata = orig_metadata
 
     @abc.abstractmethod
-    def set_patient_name(self):
+    def retrieve_orig_metadata(self, path):
+        pass
+
+    @abc.abstractmethod
+    def set_uid(self):
+        pass
+
+    @abc.abstractmethod
+    def set_ndims(self):
+        pass
+
+    @abc.abstractmethod
+    def set_shape(self):
+        pass
+
+    @abc.abstractmethod
+    def set_spacing(self):
         pass
 
 
