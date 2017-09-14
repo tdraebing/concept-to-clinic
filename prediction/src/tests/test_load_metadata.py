@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from ..preprocess import load_image as ld
-from ..preprocess import errors
+from ..preprocess import load_metadata as lm
 
 
 @pytest.fixture
@@ -29,7 +29,7 @@ def test_files():
         "ElementType = MET_SHORT\n",
         "ElementDataFile = 1.3.6.1.4.1.14519.5.2.1.6279.6001.102681962408431413578140925249.raw"
     ]
-    with open ('../images/test.mhd', 'w+')as f:
+    with open('../images/test.mhd', 'w+')as f:
         f.writelines(mock_header)
 
     open('../images/not_an_image.mhd', 'w+')
@@ -48,48 +48,15 @@ def test_files():
     os.remove('../images/not_an_image.mhd')
     os.remove('../images/not_an_image.txt')
 
-
-def test_read_dicom_series(test_files):
-    image = ld.read_dicom_series(test_files['valid']['dicom_series'])
-
-    assert isinstance(image, sitk.Image)
-    assert image.GetSize[0] > 0
-
-    with pytest.raises(errors.InvalidDicomSeriesException):
-        ld.read_dicom_series(test_files['invalid']['invalid_series'])
+def test_MetaData():
+    assert isinstance(lm.MetaData(), object)
 
 
-def test_read_raw_file(test_files):
-    image = ld.read_image_file(test_files['valid']['mhd'])
-
-    assert isinstance(image, sitk.Image)
-    assert image.GetSize == (10, 10, 3)
-
-    with pytest.raises(errors.UnknownFileTypeException):
-        ld.read_image_file(test_files['invalid']['not_an_image'])
-
-    with pytest.raises(errors.InvalidImageException):
-        ld.read_image_file(test_files['invalid']['inavlid_mhd'])
+def test_AbstractMetaDataNormalizer():
+    with pytest.raises(NotImplementedError):
+        lm.AbstractMetaDataNormalizer()
 
 
-def test_get_image(test_files):
+def test_load_metadata(test_files):
     for _, img in test_files['valid']:
-        assert isinstance(ld.get_image(img), sitk.Image)
-
-    with pytest.raises(ValueError):
-        ld.get_image(1)
-
-
-def test_load_image(test_files):
-    img_arr, metadata = ld.load_image(test_files['valid']['mhd'])
-    assert isinstance(img_arr, sitk.Image)
-
-    valid_preprocess = lambda x: x
-    img_arr = ld.load_image(test_files['valid']['mhd'], valid_preprocess)
-    assert isinstance(img_arr, sitk.Image)
-
-    with pytest.raises(TypeError):
-        invalid_preprocess = lambda x: 'no array'
-        ld.load_image(test_files['valid']['mhd'], invalid_preprocess)
-
-    assert isinstance(metadata, dict)
+        assert isinstance(ld.get_image(img), dict)

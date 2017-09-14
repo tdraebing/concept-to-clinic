@@ -1,20 +1,10 @@
 import os
-from glob import glob
 
 import numpy as np
 import SimpleITK as sitk
 
 from .errors import *
-
-
-def get_metadata(image):
-        metadata_keys = image.GetMetaDataKeys()
-        metadata = {}
-        for key in metadata_keys:
-            metadata[key] = image.GetMetaData(key)
-        return metadata
-
-def read_dicom_metadata(path):
+from .load_metadata import load_metadata
 
 
 def read_dicom_series(path):
@@ -32,12 +22,12 @@ def read_dicom_series(path):
         filenamesDICOM = reader.GetGDCMSeriesFileNames(path)
         reader.SetFileNames(filenamesDICOM)
         image = reader.Execute()
-        return image, get_metadata(image)
+        return image
     except:
         raise InvalidDicomSeriesException()
 
 
-def read_raw_file(path):
+def read_image_file(path):
     """
     Takes a path to a *.mhd- or *.raw-file and reads it into a SimpleITK image.
 
@@ -56,7 +46,7 @@ def read_raw_file(path):
         else:
             raise InvalidImageException()
 
-    return image, get_metadata(image)
+    return image
 
 
 def get_image(path):
@@ -71,7 +61,7 @@ def get_image(path):
     """
     if os.path.isfile(path):
         try:
-            return read_raw_file(path)
+            return read_image_file(path)
         except Exception as e:
             raise e
     elif os.path.isdir(path):
@@ -89,10 +79,10 @@ def load_image(path, preprocess=None):
             aimed at preprocessing CT-scan images.
 
     Returns:
-        numpy-array containing the 3D-representation of the DICOM-series
+        Numpy-array containing the 3D-representation of the DICOM-series and a dictionary containing parsed metadata.
     """
 
-    image, metadata = get_image(path)
+    image = get_image(path)
     voxel_data = sitk.GetArrayFromImage(image)
 
     if preprocess is not None:
@@ -102,4 +92,4 @@ def load_image(path, preprocess=None):
             raise TypeError('The signature of preprocess must be ' +
                             'callable[list[DICOM], ndarray] -> ndarray')
 
-    return voxel_data
+    return voxel_data, load_metadata(path)
